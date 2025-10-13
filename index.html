@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* ================================================================ */
+    /* 1. 基本スタイルとカラーパレット */
+    /* ================================================================ */
+    :root {
+      --font-family: 'M PLUS Rounded 1c', sans-serif;
+      --bg-color: #f0f7f0; /* 背景色：優しい緑 */
+      --container-bg: #fffaf0; /* コンテナ背景色：フローラルホワイト */
+      --text-color: #5d4037; /* テキスト色：濃い茶色 */
+      --shadow-color: rgba(0, 0, 0, 0.1);
+      --border-radius: 12px;
+
+      /* カードの色 */
+      --card-bg-hiragana: #FFFFFF;
+      --card-bg-wild-line: #87CEFA; /* 水色 */
+      --card-bg-wild-number: #FFD700; /* 黄色 */
+      --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-color);
+      margin: 0;
+      padding: 1rem;
+      color: var(--text-color);
+      height: calc(100vh - 2rem);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
+    }
+
+    /* ================================================================ */
+    /* 2. セットアップ画面 */
+    /* ================================================================ */
+    #setup-screen {
+      background-color: var(--container-bg);
+      padding: 2rem 3rem;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px var(--shadow-color);
+      text-align: center;
+    }
+
+    #setup-screen h1 {
+      font-size: 2.5em;
+      font-weight: 700;
+      margin-top: 0;
+    }
+
+    #player-count {
+      font-size: 1.2rem;
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: 2px solid #eee;
+      margin-right: 1rem;
+    }
+
+    /* ================================================================ */
+    /* 3. ゲーム画面のレイアウト */
+    /* ================================================================ */
+    #game-screen {
+      width: 100%;
+      height: 100%;
+      display: none; /* 初期状態は非表示 */
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .top-area {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .deck-area {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background-color: rgba(255, 255, 255, 0.7);
+      padding: 0.5rem 1rem;
+      border-radius: var(--border-radius);
+    }
+
+    #deck-count {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .board-area {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #board-card-container {
+      width: 200px;
+      height: 280px;
+    }
+
+    #players-area {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      padding: 1rem;
+      background-color: rgba(255, 255, 255, 0.5);
+      border-radius: var(--border-radius);
+      overflow-y: auto;
+    }
+
+    .player-container {
+      border: 2px solid #ddd;
+      border-radius: var(--border-radius);
+      padding: 1rem;
+      background-color: #fff;
+      display: flex;
+      flex-direction: column;
+      min-height: 220px;
+    }
+
+    .player-container h3 {
+      margin: 0 0 1rem 0;
+      text-align: center;
+      color: #555;
+    }
+
+    .player-hand {
+      flex-grow: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      align-content: flex-start;
+    }
+
+    .draw-button-container {
+      margin-top: 1rem;
+      text-align: center;
+    }
+
+    /* ================================================================ */
+    /* 4. カードのスタイル */
+    /* ================================================================ */
+    .card {
+      width: 80px;
+      height: 112px;
+      border: 1px solid #ccc;
+      border-radius: var(--border-radius);
+      box-shadow: var(--card-shadow);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .card .card-text { font-size: 1.2rem; }
+    .card .card-icon { font-size: 2.5rem; }
+
+    #board-card-container .card {
+        cursor: default;
+    }
+    #board-card-container .card:hover {
+        transform: none;
+        box-shadow: var(--card-shadow);
+    }
+    #board-card-container .card .card-text { font-size: 2rem; }
+    #board-card-container .card .card-icon { font-size: 4rem; }
+
+    .hiragana { background-color: var(--card-bg-hiragana); color: #000; }
+    .wild-line { background-color: var(--card-bg-wild-line); color: #fff; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);}
+    .wild-number { background-color: var(--card-bg-wild-number); color: #000; }
+    
+
+    /* ================================================================ */
+    /* 5. UIコンポーネント（ボタン、メッセージなど） */
+    /* ================================================================ */
+    .btn {
+      font-family: var(--font-family);
+      font-size: 1.1rem;
+      padding: 0.5rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 3px 5px rgba(0,0,0,0.2);
+    }
+
+    .btn:hover:not(:disabled) {
+      background-color: #45a049;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 8px rgba(0,0,0,0.3);
+    }
+    
+    .btn:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-secondary { background-color: #f44336; }
+    .btn-secondary:hover:not(:disabled) { background-color: #da190b; }
+    
+    .draw-button-container .btn {
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+      width: 100%;
+    }
+
+    .winner-display {
+      font-size: 3rem;
+      font-weight: bold;
+      color: #ff4500;
+      text-align: center;
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    /* ローディング表示 */
+    #loader {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background-color: rgba(255, 255, 255, 0.95);
+      padding: 10px 20px;
+      border-radius: 50px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      display: none; /* 初期状態は非表示 */
+      align-items: center;
+      z-index: 200;
+      font-weight: 700;
+    }
+    
+    #loader::before {
+        content: '🔄';
+        display: inline-block;
+        animation: spin 1s linear infinite;
+        margin-right: 10px;
+        font-size: 1.5em;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+  </style>
+</head>
+
+<body>
+  <!-- 初期設定画面 -->
+  <div id="setup-screen">
+    <h1>ワードバスケット</h1>
+    <div>
+      <label for="player-count">プレイ<ruby>人数<rt>にんずう</rt></ruby>：</label>
+      <select id="player-count">
+        <option value="2">2人</option>
+        <option value="3">3人</option>
+        <option value="4">4人</option>
+        <option value="5">5人</option>
+        <option value="6">6人</option>
+      </select>
+      <button id="start-game-btn" class="btn">ゲーム<ruby>開始<rt>かいし</rt></button>
+    </div>
+  </div>
+
+  <!-- ゲーム画面 -->
+  <div id="game-screen">
+    <div class="top-area">
+      <div class="deck-area">
+        <div id="deck-count">山札：のこり -- まい</div>
+        <button id="add-to-board-btn" class="btn"><ruby>場<rt>ば</rt></ruby>にカードを<ruby>追加<rt>ついか</rt></button>
+      </div>
+      <button id="reset-game-btn" class="btn btn-secondary">はじめから</button>
+    </div>
+    <div class="board-area">
+      <div id="board-card-container"></div>
+    </div>
+    <div id="players-area"></div>
+  </div>
+  
+  <!-- ローディング表示 -->
+  <div id="loader">
+      <ruby>読<rt>よ</rt></ruby>み<ruby>込<rt>こ</rt></ruby>み<ruby>中<rt>ちゅう</rt></ruby>...
+  </div>
+
+
+<script>
+//================================================================
+// 1. グローバル変数と定数
+//================================================================
+
+/**
+ * ゲームの現在の状態をすべてまとめて管理するオブジェクト。
+ * @property {Array<object>} deck - 山札のカード。
+ * @property {object} playersHands - 各プレイヤーの手札。
+ * @property {object} boardCard - 現在の場札。
+ * @property {number} playerCount - プレイヤーの人数。
+ */
+let gameState = {};
+
+//================================================================
+// 2. DOM要素の取得
+//================================================================
+
+// HTMLの中から操作したい部品をあらかじめ見つけて、変数に入れておく作業です。
+const setupScreen = document.getElementById('setup-screen');
+const gameScreen = document.getElementById('game-screen');
+const playerCountSelect = document.getElementById('player-count');
+const startGameBtn = document.getElementById('start-game-btn');
+const resetGameBtn = document.getElementById('reset-game-btn');
+const addToBoardBtn = document.getElementById('add-to-board-btn');
+const deckCountEl = document.getElementById('deck-count');
+const boardCardContainer = document.getElementById('board-card-container');
+const playersArea = document.getElementById('players-area');
+const loader = document.getElementById('loader');
+
+//================================================================
+// 3. サーバーとの通信
+//================================================================
+
+/**
+ * サーバー(GAS)の関数を呼び出すための共通関数。
+ * @param {string} functionName - 呼び出すGASの関数名。
+ * @param {any} args - 関数に渡す引数。
+ * @returns {Promise<any>} - サーバーからの応答を解決するPromise。
+ */
+function callServer(functionName, args) {
+  return new Promise((resolve, reject) => {
+    loader.style.display = 'flex';
+    google.script.run
+      .withSuccessHandler(response => {
+        loader.style.display = 'none';
+        resolve(response);
+      })
+      .withFailureHandler(error => {
+        loader.style.display = 'none';
+        console.error(`Error calling ${functionName}:`, error);
+        alert(`エラーが<ruby>発生<rt>はっせい</rt></ruby>しました: ${error.message}`);
+        reject(error);
+      })
+      [functionName](args);
+  });
+}
+
+//================================================================
+// 4. 描画関連の関数
+//================================================================
+
+/**
+ * ゲーム画面全体を、サーバーから受け取ったデータで構築・更新する。
+ * @param {object} initialData - ゲームの初期状態データ。
+ */
+function buildGameScreen(initialData) {
+  gameState.deck = initialData.deck;
+  gameState.playersHands = initialData.playersHands;
+  
+  updateBoardCard(initialData.boardCard);
+  updateDeckCount();
+
+  playersArea.innerHTML = ''; 
+
+  for (let i = 1; i <= gameState.playerCount; i++) {
+    const playerId = 'player' + i;
+    const playerContainer = document.createElement('div');
+    playerContainer.className = 'player-container';
+    playerContainer.id = playerId;
+
+    playerContainer.innerHTML = `
+      <h3>プレイヤー${i}</h3>
+      <div class="player-hand"></div>
+      <div class="draw-button-container">
+        <button class="btn draw-card-btn"><ruby>山札<rt>やまふだ</rt></ruby>から1<ruby>枚<rt>まい</rt>引<rt>ひ</rt></ruby>く</button>
+      </div>
+    `;
+    playersArea.appendChild(playerContainer);
+
+    // 手札のカードを配置
+    gameState.playersHands[playerId].forEach(card => {
+      addCardToPlayerHandUI(playerId, card);
+    });
+    
+    // 「山札から1枚引く」ボタンのイベントリスナーを設定
+    playerContainer.querySelector('.draw-card-btn').addEventListener('click', () => {
+      handleDrawCard(playerId);
+    });
+  }
+}
+
+/**
+ * カードのHTML要素を生成するヘルパー関数。
+ * @param {object} card - カード情報 ({type, text, icon})。
+ * @returns {HTMLButtonElement} - 作成されたカードのHTML要素。
+ */
+function createCardElement(card) {
+  const cardEl = document.createElement('button');
+  cardEl.className = `card ${card.type}`;
+  cardEl.dataset.type = card.type;
+  cardEl.dataset.text = card.text;
+  
+  let content = '';
+  if (card.icon) {
+    content = `<span class="card-text">${card.text}</span><span class="card-icon">${card.icon}</span>`;
+  } else {
+    content = `<span class="card-icon">${card.text}</span>`;
+  }
+  cardEl.innerHTML = content;
+  return cardEl;
+}
+
+/**
+ * 場札の表示を更新する。
+ * @param {object} card - 新しい場札の情報。
+ */
+function updateBoardCard(card) {
+  boardCardContainer.innerHTML = '';
+  const cardEl = createCardElement(card);
+  boardCardContainer.appendChild(cardEl);
+  gameState.boardCard = card;
+}
+
+/**
+ * プレイヤーの手札表示にカードを追加する。
+ * @param {string} playerId - プレイヤーID (e.g., 'player1')。
+ * @param {object} card - 追加するカード情報。
+ */
+function addCardToPlayerHandUI(playerId, card) {
+  const playerHandEl = document.querySelector(`#${playerId} .player-hand`);
+  if (!playerHandEl) return;
+  
+  const cardEl = createCardElement(card);
+  cardEl.addEventListener('click', () => handleCardPlay(playerId, cardEl));
+  playerHandEl.appendChild(cardEl);
+}
+
+/**
+ * 山札の残り枚数表示を更新し、ボタンの有効/無効を切り替える。
+ */
+function updateDeckCount() {
+  const deckSize = gameState.deck ? gameState.deck.length : 0;
+  deckCountEl.textContent = `山札：のこり ${deckSize} まい`;
+
+  addToBoardBtn.disabled = (deckSize === 0);
+  document.querySelectorAll('.draw-card-btn').forEach(btn => {
+    btn.disabled = (deckSize === 0);
+  });
+}
+
+//================================================================
+// 5. ユーザー操作のハンドリング
+//================================================================
+
+/**
+ * 「ゲーム開始」ボタンがクリックされたときの処理。
+ */
+async function handleStartGame() {
+  gameState.playerCount = parseInt(playerCountSelect.value);
+  const initialData = await callServer('getInitialData', gameState.playerCount);
+  
+  if (initialData) {
+    setupScreen.style.display = 'none';
+    gameScreen.style.display = 'flex';
+    buildGameScreen(initialData);
+  }
+}
+
+/**
+ * プレイヤーの手札カードがクリックされたときの処理。
+ * @param {string} playerId - カードを使ったプレイヤーID。
+ * @param {HTMLElement} cardEl - クリックされたカードのHTML要素。
+ */
+function handleCardPlay(playerId, cardEl) {
+  const newBoardCard = {
+    type: cardEl.dataset.type,
+    text: cardEl.dataset.text,
+    icon: cardEl.querySelector('.card-icon')?.textContent === cardEl.dataset.text ? undefined : cardEl.querySelector('.card-icon')?.textContent
+  };
+  updateBoardCard(newBoardCard);
+  cardEl.remove();
+
+  // 手札が0枚になったかチェック
+  const playerHandEl = document.querySelector(`#${playerId} .player-hand`);
+  if (playerHandEl.children.length === 0) {
+    document.getElementById(playerId).innerHTML = `<div class="winner-display">あがり！</div>`;
+  }
+}
+
+/**
+ * 「山札から1枚引く」ボタンがクリックされたときの処理。
+ * @param {string} playerId - カードを引くプレイヤーID。
+ */
+async function handleDrawCard(playerId) {
+  if (gameState.deck.length === 0) return;
+  
+  const result = await callServer('drawCardFromDeck', gameState.deck);
+  if (result) {
+    gameState.deck = result.newDeck;
+    addCardToPlayerHandUI(playerId, result.drawnCard);
+    updateDeckCount();
+  }
+}
+
+/**
+ * 「場にカードを追加」ボタンがクリックされたときの処理。
+ */
+async function handleAddToBoard() {
+    if (gameState.deck.length === 0) return;
+
+    const result = await callServer('drawCardFromDeck', gameState.deck);
+    if(result) {
+        gameState.deck = result.newDeck;
+        updateBoardCard(result.drawnCard);
+        updateDeckCount();
+    }
+}
+
+/**
+ * 「はじめから」ボタンがクリックされたときの処理（ゲームを初期状態に戻す）。
+ */
+function resetToSetupScreen() {
+  gameState = {};
+  
+  gameScreen.style.display = 'none';
+  setupScreen.style.display = 'block';
+  
+  playersArea.innerHTML = '';
+  boardCardContainer.innerHTML = '';
+  
+  playerCountSelect.value = '2';
+}
+
+//================================================================
+// 6. イベントリスナーの登録
+//================================================================
+
+// DOMが読み込まれたら、各ボタンにイベントリスナーを登録します。
+document.addEventListener('DOMContentLoaded', () => {
+  startGameBtn.addEventListener('click', handleStartGame);
+  resetGameBtn.addEventListener('click', resetToSetupScreen);
+  addToBoardBtn.addEventListener('click', handleAddToBoard);
+});
+
+</script>
+</body>
+</html>
