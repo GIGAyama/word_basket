@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  PlayCircle, 
-  RotateCcw, 
-  Star, 
-  BookOpen, 
-  Smile, 
-  Trophy, 
-  PlusCircle, 
-  X, 
+import {
+  PlayCircle,
+  RotateCcw,
+  Star,
+  BookOpen,
+  Smile,
+  Trophy,
+  PlusCircle,
+  X,
   Info,
   Timer,
   TimerOff,
@@ -85,7 +85,7 @@ const playSound = (type) => {
         oscW.stop(now + i * 0.1 + 0.2);
       });
     }
-  } catch(e) {
+  } catch (e) {
     console.error("Audio playback failed", e);
   }
 };
@@ -94,12 +94,12 @@ const playSound = (type) => {
 // 1. Data Definitions
 // ==========================================
 const FULL_DECK_DEF = [
-  ...['あ','い','う','え','お','か','き','く','け','こ','さ','し','す','せ','そ',
-      'た','ち','つ','て','と','な','に','ぬ','ね','の','は','ひ','ふ','へ','ほ',
-      'ま','み','む','め','も','や','ゆ','よ','ら','り','る','れ','ろ','わ']
-      .map(t => ({ type: 'hiragana', text: t })),
-  ...['あ行','か行','さ行','た行','な行','は行','ま行','や行','ら行']
-      .map(t => ({ type: 'wild-line', text: t, icon: '→' })),
+  ...['あ', 'い', 'う', 'え', 'お', 'か', 'き', 'く', 'け', 'こ', 'さ', 'し', 'す', 'せ', 'そ',
+    'た', 'ち', 'つ', 'て', 'と', 'な', 'に', 'ぬ', 'ね', 'の', 'は', 'ひ', 'ふ', 'へ', 'ほ',
+    'ま', 'み', 'む', 'め', 'も', 'や', 'ゆ', 'よ', 'ら', 'り', 'る', 'れ', 'ろ', 'わ']
+    .map(t => ({ type: 'hiragana', text: t })),
+  ...['あ行', 'か行', 'さ行', 'た行', 'な行', 'は行', 'ま行', 'や行', 'ら行']
+    .map(t => ({ type: 'wild-line', text: t, icon: '→' })),
   { type: 'wild-number', text: '5文字', icon: '⑤' },
   { type: 'wild-number', text: '6文字', icon: '⑥' },
   { type: 'wild-number', text: '7文字以上', icon: '⑦+' },
@@ -114,19 +114,24 @@ const FULL_DECK_DEF = [
 
 const Card = ({ card, isBoard, isSelected, onClick, onSwipe }) => {
   const baseStyle = "flex flex-col justify-center items-center rounded-xl cursor-pointer select-none transition-all duration-200 relative bg-white";
-  
-  const sizeStyle = isBoard 
-    ? "w-24 h-36 md:w-32 md:h-44 border-4 shadow-md text-5xl md:text-6xl" 
-    : `w-[56px] h-[80px] md:w-[76px] md:h-[108px] border-2 text-2xl md:text-4xl ${
-        isSelected 
-          ? 'shadow-[0_0_0_4px_rgba(59,130,246,0.5)] -translate-y-6 md:-translate-y-8 z-30 ring-4 ring-blue-400 border-blue-400' 
-          : 'shadow-sm hover:-translate-y-2 hover:shadow-lg'
-      }`; 
-  
+
+  // 文字数に応じたフォントサイズ調整
+  const isMultiChar = card.text.length > 1;
+  const fontSizeStyle = isBoard
+    ? (isMultiChar ? "text-xl md:text-2xl" : "text-5xl md:text-6xl")
+    : (isMultiChar ? "text-[10px] md:text-xs" : "text-2xl md:text-4xl");
+
+  const sizeStyle = isBoard
+    ? `w-24 h-36 md:w-32 md:h-44 border-4 shadow-md ${fontSizeStyle}`
+    : `w-[56px] h-[80px] md:w-[76px] md:h-[108px] border-2 ${fontSizeStyle} ${isSelected
+      ? 'shadow-[0_0_0_4px_rgba(59,130,246,0.5)] -translate-y-6 md:-translate-y-8 z-30 ring-4 ring-blue-400 border-blue-400'
+      : 'shadow-sm hover:-translate-y-2 hover:shadow-lg'
+    }`;
+
   let typeStyle = "";
   if (card.type === 'hiragana') typeStyle = "border-gray-200 text-gray-800";
-  if (card.type === 'wild-line') typeStyle = "bg-[#80d8ff] border-[#4fc3f7] text-white drop-shadow-md";
-  if (card.type === 'wild-number') typeStyle = "bg-[#ffff8d] border-[#fff176] text-amber-900";
+  if (card.type === 'wild-line') typeStyle = "bg-[#e1f5fe] border-[#03a9f4] text-[#01579b] drop-shadow-sm";
+  if (card.type === 'wild-number') typeStyle = "bg-[#fffde7] border-[#fbc02d] text-[#f57f17]";
 
   const handleTouchStart = (e) => {
     if (isBoard) return;
@@ -143,8 +148,8 @@ const Card = ({ card, isBoard, isSelected, onClick, onSwipe }) => {
     const startY = parseFloat(e.currentTarget.dataset.startY);
     const dx = touch.clientX - startX;
     const dy = touch.clientY - startY;
-    
-    if (Math.sqrt(dx*dx + dy*dy) > 30) {
+
+    if (Math.sqrt(dx * dx + dy * dy) > 30) {
       e.currentTarget.dataset.swiped = 'true';
     }
   };
@@ -167,26 +172,26 @@ const Card = ({ card, isBoard, isSelected, onClick, onSwipe }) => {
   };
 
   return (
-    <div 
-      className={`${baseStyle} ${sizeStyle} ${typeStyle}`} 
+    <div
+      className={`${baseStyle} ${sizeStyle} ${typeStyle}`}
       onClick={handleClick}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-       <div className={`font-black leading-none`}>
-         {card.text}
-       </div>
-       {card.icon && (
-         <div className={`absolute font-bold opacity-80 ${isBoard ? 'text-xl bottom-2 right-2' : 'text-xs bottom-1 right-1'}`}>
-           {card.icon}
-         </div>
-       )}
-       {!isBoard && isSelected && (
-         <div className="absolute -top-4 md:-top-5 bg-blue-600 text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded-full shadow-lg whitespace-nowrap animate-bounce z-40 pointer-events-none">
-           もう1回タップで出す！
-         </div>
-       )}
+      <div className={`font-black leading-none`}>
+        {card.text}
+      </div>
+      {card.icon && (
+        <div className={`absolute font-bold opacity-80 ${isBoard ? 'text-xl bottom-2 right-2' : 'text-xs bottom-1 right-1'}`}>
+          {card.icon}
+        </div>
+      )}
+      {!isBoard && isSelected && (
+        <div className="absolute -top-4 md:-top-5 bg-blue-600 text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded-full shadow-lg whitespace-nowrap animate-bounce z-40 pointer-events-none">
+          もう1回タップで出す！
+        </div>
+      )}
     </div>
   );
 };
@@ -197,7 +202,7 @@ const PlayerSlot = ({ position, rotate, children }) => {
   if (position === 'top') posClasses = "top-0 left-1/2 -translate-x-1/2";
   if (position === 'left') posClasses = "left-0 top-1/2 -translate-y-1/2";
   if (position === 'right') posClasses = "right-0 top-1/2 -translate-y-1/2";
-  if (position === 'bottom-left') posClasses = "bottom-0 left-[2%]"; 
+  if (position === 'bottom-left') posClasses = "bottom-0 left-[2%]";
   if (position === 'bottom-right') posClasses = "bottom-0 right-[2%]";
   if (position === 'top-left') posClasses = "top-0 left-[2%]";
   if (position === 'top-right') posClasses = "top-0 right-[2%]";
@@ -210,9 +215,9 @@ const PlayerSlot = ({ position, rotate, children }) => {
 
   return (
     <div className={`absolute ${posClasses} w-[340px] h-[340px] md:w-[480px] md:h-[480px] flex justify-center items-end pb-2 md:pb-4 ${rotateClass} z-20 pointer-events-none`}>
-       <div className="pointer-events-auto w-[320px] md:w-[460px]">
-         {children}
-       </div>
+      <div className="pointer-events-auto w-[320px] md:w-[460px]">
+        {children}
+      </div>
     </div>
   );
 };
@@ -229,15 +234,15 @@ const getPlayerSlot = (playerIndex, totalPlayers) => {
 // 3. Main Application
 // ==========================================
 export default function App() {
-  const [gameState, setGameState] = useState('setup'); 
-  const [playerCount, setPlayerCount] = useState(4); 
-  const [timerSetting, setTimerSetting] = useState(15); 
-  
+  const [gameState, setGameState] = useState('setup');
+  const [playerCount, setPlayerCount] = useState(4);
+  const [timerSetting, setTimerSetting] = useState(15);
+
   const [deck, setDeck] = useState([]);
   const [boardCard, setBoardCard] = useState(null);
   const [playersHands, setPlayersHands] = useState({});
-  const [selectedCards, setSelectedCards] = useState({}); 
-  
+  const [selectedCards, setSelectedCards] = useState({});
+
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [timeLeft, setTimeLeft] = useState(15);
   const [soundEnabledState, setSoundEnabledState] = useState(true);
@@ -300,11 +305,11 @@ export default function App() {
       hands[`player${i}`] = newDeck.splice(0, 5);
     }
     const firstCard = newDeck.shift();
-    
+
     setDeck(newDeck);
     setPlayersHands(hands);
     setBoardCard(firstCard);
-    
+
     setSelectedCards({});
     if (timerSetting > 0) {
       setIsTimerActive(true);
@@ -333,7 +338,7 @@ export default function App() {
     const newCard = newDeck.shift();
     setBoardCard(newCard);
     setDeck(newDeck);
-    
+
     showToast('パスしました（場札更新）');
     playSound('draw');
     if (isTimerActive) setTimeLeft(getResetTime());
@@ -348,7 +353,7 @@ export default function App() {
     }
     const newDeck = [...deck];
     const card = newDeck.shift();
-    
+
     setPlayersHands(prev => ({
       ...prev,
       [pid]: [...prev[pid], card]
@@ -369,14 +374,14 @@ export default function App() {
 
   const handlePlayCard = (pid, cardIndex) => {
     const hand = playersHands[pid];
-    if (!hand || !hand[cardIndex]) return; 
-    
+    if (!hand || !hand[cardIndex]) return;
+
     const card = hand[cardIndex];
     setBoardCard(card);
-    
+
     const newHand = [...hand];
     newHand.splice(cardIndex, 1);
-    
+
     setPlayersHands(prev => ({
       ...prev,
       [pid]: newHand
@@ -389,7 +394,7 @@ export default function App() {
     }
 
     if (isTimerActive) setTimeLeft(getResetTime());
-    
+
     setSelectedCards(prev => {
       const next = { ...prev };
       delete next[pid];
@@ -441,14 +446,14 @@ export default function App() {
           </div>
           <div className="flex items-center gap-1.5 md:gap-2">
             {/* ゴブレットのサウンドボタンを再現 */}
-            <button 
-              onClick={toggleSound} 
+            <button
+              onClick={toggleSound}
               className="bg-[#f8f9fa] text-[#1a73e8] font-bold text-[0.75rem] py-1 px-3 rounded-full shadow-sm border-0 active:scale-95 transition-transform"
             >
               {soundEnabledState ? '🔊 ON' : '🔇 OFF'}
             </button>
             {/* ゴブレットのルールボタンを再現 */}
-            <button 
+            <button
               onClick={() => { initAudio(); setShowRuleModal(true); playSound('select'); }}
               className="pop-btn bg-[#ffca28] text-white font-bold rounded-full w-[38px] h-[38px] flex items-center justify-center shadow-sm text-[1.2rem] p-0"
             >
@@ -461,7 +466,7 @@ export default function App() {
             メインエリア (残りの空間を埋める)
             ========================================== */}
         <main className="flex-1 relative w-full overflow-hidden">
-          
+
           {/* SETUP SCREEN */}
           {gameState === 'setup' && (
             <div className="absolute inset-0 overflow-y-auto overflow-x-hidden flex flex-col items-center pt-6 px-4 pb-12 pointer-events-auto touch-pan-y">
@@ -469,7 +474,7 @@ export default function App() {
                 <h2 className="font-black mb-6 md:mb-8 text-blue-600 text-3xl md:text-4xl">
                   <ruby>遊<rt>あそ</rt></ruby>ぶ<ruby>準<rt>じゅん</rt>備<rt>び</rt></ruby>
                 </h2>
-                
+
                 {/* 人数設定 */}
                 <div className="mb-6">
                   <label className="block text-lg md:text-xl font-bold text-gray-500 mb-3">
@@ -477,17 +482,17 @@ export default function App() {
                     <ruby>何<rt>なん</rt>人<rt>にん</rt></ruby>で<ruby>囲<rt>かこ</rt></ruby>みますか？
                   </label>
                   <div className="relative">
-                    <select 
+                    <select
                       value={playerCount}
                       onChange={(e) => { initAudio(); setPlayerCount(Number(e.target.value)); }}
                       className="w-full text-center rounded-full border-4 border-yellow-400 bg-gray-50 font-bold text-blue-600 py-3 md:py-4 text-2xl md:text-3xl appearance-none cursor-pointer outline-none focus:ring-4 focus:ring-yellow-200"
                     >
-                      {[2,3,4,5,6].map(num => (
+                      {[2, 3, 4, 5, 6].map(num => (
                         <option key={num} value={num}>{num}人</option>
                       ))}
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-6 flex items-center px-2 text-yellow-500">
-                      <svg className="fill-current h-8 w-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                      <svg className="fill-current h-8 w-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
                     </div>
                   </div>
                 </div>
@@ -499,7 +504,7 @@ export default function App() {
                     <ruby>制<rt>せい</rt>限<rt>げん</rt></ruby><ruby>時<rt>じ</rt>間<rt>かん</rt></ruby>
                   </label>
                   <div className="relative">
-                    <select 
+                    <select
                       value={timerSetting}
                       onChange={(e) => { initAudio(); setTimerSetting(Number(e.target.value)); }}
                       className="w-full text-center rounded-full border-4 border-blue-400 bg-gray-50 font-bold text-blue-600 py-3 md:py-4 text-2xl md:text-3xl appearance-none cursor-pointer outline-none focus:ring-4 focus:ring-blue-200"
@@ -516,7 +521,7 @@ export default function App() {
                   </div>
                 </div>
 
-                <button 
+                <button
                   onClick={startGame}
                   className="pop-btn w-full bg-blue-600 hover:bg-blue-700 text-white py-4 md:py-5 rounded-full shadow-lg text-2xl font-bold flex items-center justify-center border-b-8 border-blue-800 active:border-b-0 active:translate-y-2 transition-all"
                 >
@@ -529,13 +534,13 @@ export default function App() {
           {/* PLAYING SCREEN */}
           {gameState === 'playing' && (
             <div className="absolute inset-0 pointer-events-auto touch-none" onClick={() => initAudio()}>
-              
+
               {/* Central Board Area */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center p-6 md:p-8 bg-white/50 backdrop-blur-xl rounded-[3rem] shadow-[0_0_60px_rgba(255,255,255,0.9)] border-4 border-white z-10 min-w-[320px] md:min-w-[420px]">
-                
+
                 <div className="flex gap-4 md:gap-8 items-start justify-center w-full">
                   {/* Deck / Pass Button */}
-                  <div 
+                  <div
                     onClick={handleDrawForBoard}
                     className={`relative w-24 h-36 md:w-32 md:h-44 rounded-2xl flex flex-col items-center justify-center border-4 shadow-md transition-all duration-200 active:scale-95 select-none shrink-0 ${deck.length > 0 ? 'bg-blue-50 border-blue-300 cursor-pointer hover:-translate-y-2 hover:shadow-lg hover:border-blue-400' : 'bg-gray-100 border-gray-300 cursor-not-allowed'}`}
                   >
@@ -543,9 +548,9 @@ export default function App() {
                     <span className={`font-black text-lg md:text-xl ${deck.length > 0 ? 'text-blue-500' : 'text-gray-400'}`}>山札</span>
                     <span className={`font-black text-3xl md:text-4xl ${deck.length > 0 ? 'text-blue-600' : 'text-gray-500'}`}>{deck.length}</span>
                     {deck.length > 0 && (
-                       <div className="absolute -bottom-3 md:-bottom-4 bg-yellow-400 text-yellow-900 text-[10px] md:text-xs font-bold px-3 py-1 md:px-4 md:py-1.5 rounded-full shadow-md whitespace-nowrap">
-                         パス / 場に出す
-                       </div>
+                      <div className="absolute -bottom-3 md:-bottom-4 bg-yellow-400 text-yellow-900 text-[10px] md:text-xs font-bold px-3 py-1 md:px-4 md:py-1.5 rounded-full shadow-md whitespace-nowrap">
+                        パス / 場に出す
+                      </div>
                     )}
                   </div>
 
@@ -558,14 +563,13 @@ export default function App() {
                       </div>
                       {boardCard ? <Card card={boardCard} isBoard={true} /> : <div className="w-24 h-36 md:w-32 md:h-44 border-4 border-dashed border-gray-300 rounded-2xl" />}
                     </div>
-                    
+
                     {/* Timer Display */}
                     <div className="h-10 md:h-12 mt-3 md:mt-4 flex items-center justify-center w-full">
                       {isTimerActive && (
-                        <div className={`px-4 py-1.5 md:py-2 rounded-full font-black text-sm md:text-base shadow-lg border-2 whitespace-nowrap transition-colors ${
-                          timeLeft <= 3 ? 'bg-red-500 text-white border-white animate-pulse' : 'bg-gray-800 text-yellow-400 border-gray-900'
-                        }`}>
-                           ⏳ あと {timeLeft}秒
+                        <div className={`px-4 py-1.5 md:py-2 rounded-full font-black text-sm md:text-base shadow-lg border-2 whitespace-nowrap transition-colors ${timeLeft <= 3 ? 'bg-red-500 text-white border-white animate-pulse' : 'bg-gray-800 text-yellow-400 border-gray-900'
+                          }`}>
+                          ⏳ あと {timeLeft}秒
                         </div>
                       )}
                     </div>
@@ -574,15 +578,15 @@ export default function App() {
 
                 {/* Central Controls */}
                 <div className="flex gap-4 mt-2">
-                  <button 
-                    onClick={handleToggleTimer} 
+                  <button
+                    onClick={handleToggleTimer}
                     className={`p-3 rounded-full shadow hover:scale-110 transition-colors active:scale-95 ${isTimerActive ? 'bg-yellow-400 text-white border-2 border-white' : 'bg-white/90 hover:bg-white text-gray-500'}`}
                     title="自動パスタイマー (ON/OFF)"
                   >
                     {isTimerActive ? <Timer className="w-6 h-6" /> : <TimerOff className="w-6 h-6" />}
                   </button>
-                  <button 
-                    onClick={() => { initAudio(); setShowConfirmReset(true); playSound('select'); }} 
+                  <button
+                    onClick={() => { initAudio(); setShowConfirmReset(true); playSound('select'); }}
                     className="bg-white/90 p-3 rounded-full shadow hover:bg-white text-red-500 hover:scale-110 transition-transform active:scale-95"
                     title="最初に戻る"
                   >
@@ -601,57 +605,57 @@ export default function App() {
                 return (
                   <PlayerSlot key={pid} position={slotInfo.position} rotate={slotInfo.rotate}>
                     <div className="bg-white/90 backdrop-blur-md rounded-2xl p-4 shadow-xl border-2 border-gray-100 flex flex-col items-center w-full">
-                      
+
                       {/* Player Header */}
                       <div className="flex justify-between items-center w-full mb-3">
-                         <span className="font-bold text-blue-600 flex items-center text-sm md:text-base">
-                           <Smile className="w-4 h-4 md:w-5 md:h-5 mr-1 text-yellow-500 fill-current"/>
-                           プレイヤー{playerNum}
-                         </span>
-                         <span className="bg-gray-100 border px-2 py-0.5 rounded-full text-xs md:text-sm font-bold text-gray-700">
-                           残り {hand.length}枚
-                         </span>
+                        <span className="font-bold text-blue-600 flex items-center text-sm md:text-base">
+                          <Smile className="w-4 h-4 md:w-5 md:h-5 mr-1 text-yellow-500 fill-current" />
+                          プレイヤー{playerNum}
+                        </span>
+                        <span className="bg-gray-100 border px-2 py-0.5 rounded-full text-xs md:text-sm font-bold text-gray-700">
+                          残り {hand.length}枚
+                        </span>
                       </div>
-                      
+
                       {/* Hand Area */}
                       <div className="flex justify-center items-center h-[90px] md:h-[120px] w-full mb-3 md:mb-4">
-                         {hasWon ? (
-                           <div className="text-red-500 font-black text-2xl flex flex-col items-center animate-bounce">
-                             <Trophy className="w-10 h-10 mb-1 text-yellow-400 fill-current" />
-                             あがり！
-                           </div>
-                         ) : (
-                           <div className="flex gap-1.5 md:gap-2 justify-center w-full px-1">
-                             {hand.map((card, cardIdx) => {
-                               const isSelected = selectedCards[pid] === cardIdx;
-                               return (
-                                 <div key={cardIdx} className="relative transition-transform duration-200 active:scale-95 cursor-pointer">
-                                   <Card 
-                                     card={card} 
-                                     isBoard={false} 
-                                     isSelected={isSelected}
-                                     onClick={() => handleCardClick(pid, cardIdx)} 
-                                     onSwipe={() => {
-                                       initAudio();
-                                       handlePlayCard(pid, cardIdx);
-                                     }}
-                                   />
-                                 </div>
-                               );
-                             })}
-                           </div>
-                         )}
+                        {hasWon ? (
+                          <div className="text-red-500 font-black text-2xl flex flex-col items-center animate-bounce">
+                            <Trophy className="w-10 h-10 mb-1 text-yellow-400 fill-current" />
+                            あがり！
+                          </div>
+                        ) : (
+                          <div className="flex gap-1.5 md:gap-2 justify-center w-full px-1">
+                            {hand.map((card, cardIdx) => {
+                              const isSelected = selectedCards[pid] === cardIdx;
+                              return (
+                                <div key={cardIdx} className="relative transition-transform duration-200 active:scale-95 cursor-pointer">
+                                  <Card
+                                    card={card}
+                                    isBoard={false}
+                                    isSelected={isSelected}
+                                    onClick={() => handleCardClick(pid, cardIdx)}
+                                    onSwipe={() => {
+                                      initAudio();
+                                      handlePlayCard(pid, cardIdx);
+                                    }}
+                                  />
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
-                      
+
                       {/* Draw Button */}
-                      <button 
+                      <button
                         onClick={() => handleDrawToHand(pid)}
                         disabled={deck.length === 0 || hasWon}
                         className="w-full bg-blue-600 text-white text-sm md:text-base py-2.5 md:py-3 rounded-full font-bold shadow-sm hover:bg-blue-700 active:scale-95 disabled:bg-gray-300 disabled:text-gray-500 transition-all flex justify-center items-center"
                       >
                         <PlusCircle className="w-4 h-4 md:w-5 md:h-5 mr-1" />山札から引く
                       </button>
-                      
+
                     </div>
                   </PlayerSlot>
                 );
@@ -676,15 +680,15 @@ export default function App() {
           <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm pointer-events-auto" onClick={(e) => e.stopPropagation()}>
             <div className="bg-[#fff9c4] w-full max-w-4xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-200">
               <div className="bg-yellow-400 text-white p-4 relative flex justify-center items-center shrink-0">
-                 <h3 className="text-2xl font-black flex items-center m-0">
-                   <BookOpen className="w-6 h-6 mr-2" />あそびかた
-                 </h3>
-                 <button 
-                   onClick={() => { setShowRuleModal(false); playSound('select'); }}
-                   className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-yellow-500 hover:bg-yellow-600 rounded-full transition-colors border-0"
-                 >
-                   <X className="w-6 h-6" />
-                 </button>
+                <h3 className="text-2xl font-black flex items-center m-0">
+                  <BookOpen className="w-6 h-6 mr-2" />あそびかた
+                </h3>
+                <button
+                  onClick={() => { setShowRuleModal(false); playSound('select'); }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-yellow-500 hover:bg-yellow-600 rounded-full transition-colors border-0"
+                >
+                  <X className="w-6 h-6" />
+                </button>
               </div>
               <div className="p-6 md:p-8 overflow-y-auto">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -692,9 +696,9 @@ export default function App() {
                     <div className="text-6xl mb-4">🍎</div>
                     <h4 className="font-black text-blue-600 mb-4 text-2xl">しりとりしよう！</h4>
                     <p className="text-lg text-gray-600 font-bold leading-loose mb-6">
-                      「<ruby>場<rt>ば</rt></ruby>のカード」の<ruby>文<rt>も</rt>字<rt>じ</rt></ruby>から<ruby>始<rt>はじ</rt></ruby>まって<br/>
-                      <span className="text-blue-600 bg-blue-50 px-2 py-1 rounded">「<ruby>手<rt>て</rt>札<rt>ふだ</rt></ruby>のカード」</span>の<ruby>文<rt>も</rt>字<rt>じ</rt></ruby>で<ruby>終<rt>お</rt></ruby>わる<br/>
-                      <span className="text-red-500 bg-yellow-100 px-2 py-1 rounded">3<ruby>文<rt>も</rt>字<rt>じ</rt></ruby><ruby>以<rt>い</rt>上<rt>じょう</rt></ruby></span>の<ruby>言<rt>こと</rt>葉<rt>ば</rt></ruby>を<br/>
+                      「<ruby>場<rt>ば</rt></ruby>のカード」の<ruby>文<rt>も</rt>字<rt>じ</rt></ruby>から<ruby>始<rt>はじ</rt></ruby>まって<br />
+                      <span className="text-blue-600 bg-blue-50 px-2 py-1 rounded">「<ruby>手<rt>て</rt>札<rt>ふだ</rt></ruby>のカード」</span>の<ruby>文<rt>も</rt>字<rt>じ</rt></ruby>で<ruby>終<rt>お</rt></ruby>わる<br />
+                      <span className="text-red-500 bg-yellow-100 px-2 py-1 rounded">3<ruby>文<rt>も</rt>字<rt>じ</rt></ruby><ruby>以<rt>い</rt>上<rt>じょう</rt></ruby></span>の<ruby>言<rt>こと</rt>葉<rt>ば</rt></ruby>を<br />
                       <ruby>言<rt>い</rt></ruby>ってカードを<ruby>出<rt>だ</rt></ruby>そう！
                     </p>
                     <div className="bg-gray-50 rounded-2xl p-4 text-left text-gray-600 font-bold border">
@@ -714,7 +718,7 @@ export default function App() {
                 </div>
               </div>
               <div className="p-6 pt-0 flex justify-center bg-[#fff9c4] shrink-0">
-                <button 
+                <button
                   onClick={() => { setShowRuleModal(false); playSound('select'); }}
                   className="pop-btn w-3/4 max-w-sm bg-blue-600 text-white rounded-full py-4 text-2xl font-black shadow-lg hover:bg-blue-700 border-0"
                 >
@@ -732,14 +736,14 @@ export default function App() {
               <h3 className="text-2xl font-black text-gray-800 mb-2">最初に戻りますか？</h3>
               <p className="text-gray-500 font-bold mb-8">現在のゲームは終了します</p>
               <div className="flex gap-4 justify-center">
-                <button 
-                  onClick={() => { setShowConfirmReset(false); playSound('select'); }} 
+                <button
+                  onClick={() => { setShowConfirmReset(false); playSound('select'); }}
                   className="flex-1 py-3 rounded-full bg-gray-100 text-gray-600 font-bold hover:bg-gray-200 transition-colors border-0"
                 >
                   いいえ
                 </button>
-                <button 
-                  onClick={resetGame} 
+                <button
+                  onClick={resetGame}
                   className="flex-1 py-3 rounded-full bg-red-500 text-white font-bold shadow hover:bg-red-600 transition-colors border-0"
                 >
                   はい
