@@ -1,0 +1,10 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* その他のグローバルスタイルがあればここに追記 */
+body {
+  margin: 0;
+  padding: 0;
+  overscroll-behavior-y: none; /* Pull-to-refresh防止用 */
+}
