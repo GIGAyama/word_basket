@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   PlayCircle,
   RotateCcw,
@@ -115,16 +115,17 @@ const FULL_DECK_DEF = [
 const Card = ({ card, isBoard, isSelected, onClick, onSwipe }) => {
   const baseStyle = "flex flex-col justify-center items-center rounded-xl cursor-pointer select-none transition-all duration-200 relative bg-white";
 
-  // 文字数に応じたフォントサイズ調整
+  // プレイ画面全体を端末サイズに合わせて一括スケーリングするため、
+  // カードは固定のデザインサイズで定義する
   const isMultiChar = card.text.length > 1;
   const fontSizeStyle = isBoard
-    ? (isMultiChar ? "text-xl md:text-2xl" : "text-5xl md:text-6xl")
-    : (isMultiChar ? "text-[10px] md:text-xs" : "text-2xl md:text-4xl");
+    ? (isMultiChar ? "text-2xl" : "text-6xl")
+    : (isMultiChar ? "text-xs" : "text-4xl");
 
   const sizeStyle = isBoard
-    ? `w-24 h-36 md:w-32 md:h-44 border-4 shadow-md ${fontSizeStyle}`
-    : `w-[56px] h-[80px] md:w-[76px] md:h-[108px] border-2 ${fontSizeStyle} ${isSelected
-      ? 'shadow-[0_0_0_4px_rgba(59,130,246,0.5)] -translate-y-6 md:-translate-y-8 z-30 ring-4 ring-blue-400 border-blue-400'
+    ? `w-32 h-44 border-4 shadow-md ${fontSizeStyle}`
+    : `w-[76px] h-[108px] border-2 ${fontSizeStyle} ${isSelected
+      ? 'shadow-[0_0_0_4px_rgba(59,130,246,0.5)] -translate-y-8 z-30 ring-4 ring-blue-400 border-blue-400'
       : 'shadow-sm hover:-translate-y-2 hover:shadow-lg'
     }`;
 
@@ -157,18 +158,27 @@ const Card = ({ card, isBoard, isSelected, onClick, onSwipe }) => {
   const handleTouchEnd = (e) => {
     if (isBoard) return;
     if (e.currentTarget.dataset.swiped === 'true') {
-      if (onSwipe) onSwipe();
+      // スワイプで即時プレイ。後続の click 発火を抑止する
       if (e.cancelable) e.preventDefault();
-    } else {
-      if (onClick) onClick();
+      if (onSwipe) onSwipe();
     }
+    // タップの場合はここでは何もせず、後続の click イベントに処理を任せる
+    // （ここで onClick を呼ぶと click イベントと二重発火し、1タップで即プレイされてしまう）
+  };
+
+  const handleTouchCancel = (e) => {
+    if (isBoard) return;
+    e.currentTarget.dataset.swiped = 'false';
   };
 
   const handleClick = (e) => {
     if (isBoard) return;
-    if (e.currentTarget.dataset.swiped !== 'true') {
-      if (onClick) onClick();
+    if (e.currentTarget.dataset.swiped === 'true') {
+      // スワイプ直後に click が届いた場合は無視してフラグを戻す
+      e.currentTarget.dataset.swiped = 'false';
+      return;
     }
+    if (onClick) onClick();
   };
 
   return (
@@ -178,6 +188,7 @@ const Card = ({ card, isBoard, isSelected, onClick, onSwipe }) => {
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchCancel}
     >
       <div className={`font-black leading-none`}>
         {card.text}
@@ -188,7 +199,7 @@ const Card = ({ card, isBoard, isSelected, onClick, onSwipe }) => {
         </div>
       )}
       {!isBoard && isSelected && (
-        <div className="absolute -top-4 md:-top-5 bg-blue-600 text-white text-[10px] md:text-xs font-bold px-3 py-1 rounded-full shadow-lg whitespace-nowrap animate-bounce z-40 pointer-events-none">
+        <div className="absolute -top-5 bg-blue-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg whitespace-nowrap animate-bounce z-40 pointer-events-none">
           もう1回タップで出す！
         </div>
       )}
@@ -214,8 +225,8 @@ const PlayerSlot = ({ position, rotate, children }) => {
   if (rotate === -90) rotateClass = "-rotate-90";
 
   return (
-    <div className={`absolute ${posClasses} w-[340px] h-[340px] md:w-[480px] md:h-[480px] flex justify-center items-end pb-2 md:pb-4 ${rotateClass} z-20 pointer-events-none`}>
-      <div className="pointer-events-auto w-[320px] md:w-[460px]">
+    <div className={`absolute ${posClasses} w-[480px] h-[480px] flex justify-center items-end pb-4 ${rotateClass} z-20 pointer-events-none`}>
+      <div className="pointer-events-auto w-[460px]">
         {children}
       </div>
     </div>
@@ -228,6 +239,15 @@ const getPlayerSlot = (playerIndex, totalPlayers) => {
   if (totalPlayers === 4) return [{ position: 'bottom', rotate: 0 }, { position: 'left', rotate: 90 }, { position: 'top', rotate: 180 }, { position: 'right', rotate: -90 }][playerIndex];
   if (totalPlayers === 5) return [{ position: 'bottom', rotate: 0 }, { position: 'left', rotate: 90 }, { position: 'top-left', rotate: 180 }, { position: 'top-right', rotate: 180 }, { position: 'right', rotate: -90 }][playerIndex];
   if (totalPlayers === 6) return [{ position: 'bottom-right', rotate: 0 }, { position: 'bottom-left', rotate: 0 }, { position: 'left', rotate: 90 }, { position: 'top-left', rotate: 180 }, { position: 'top-right', rotate: 180 }, { position: 'right', rotate: -90 }][playerIndex];
+};
+
+// プレイ画面のデザインサイズ（この大きさでレイアウトし、画面に収まるよう一括スケーリングする）
+const DESIGN_SIZES = {
+  2: { w: 540, h: 920 },
+  3: { w: 940, h: 900 },
+  4: { w: 940, h: 990 },
+  5: { w: 1000, h: 990 },
+  6: { w: 1000, h: 990 },
 };
 
 // ==========================================
@@ -250,21 +270,49 @@ export default function App() {
   const [showRuleModal, setShowRuleModal] = useState(false);
   const [showConfirmReset, setShowConfirmReset] = useState(false);
   const [toastMsg, setToastMsg] = useState(null);
+  const toastTimerRef = useRef(null);
+
+  // プレイ画面のスケーリング用（メイン領域の実サイズを監視）
+  const playAreaRef = useRef(null);
+  const [areaSize, setAreaSize] = useState({ w: 0, h: 0 });
+
+  useEffect(() => {
+    if (gameState !== 'playing') return;
+    const el = playAreaRef.current;
+    if (!el) return;
+    const update = () => setAreaSize({ w: el.clientWidth, h: el.clientHeight });
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [gameState]);
+
+  const design = DESIGN_SIZES[playerCount] || DESIGN_SIZES[4];
+  // どの端末でもプレイ画面全体が収まる倍率（大画面では最大1.25倍まで拡大）
+  const playScale = areaSize.w > 0 && areaSize.h > 0
+    ? Math.min(1.25, areaSize.w / design.w, areaSize.h / design.h)
+    : 1;
 
   const showToast = (msg) => {
     setToastMsg(msg);
-    setTimeout(() => setToastMsg(null), 2000);
+    // 直前のトーストのタイマーが残っていると新しいトーストが早く消えてしまうためクリアする
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToastMsg(null), 2000);
   };
+
+  useEffect(() => () => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+  }, []);
 
   const getResetTime = () => timerSetting > 0 ? timerSetting : 15;
 
   useEffect(() => {
-    if (!isTimerActive || gameState !== 'playing' || timeLeft <= 0) return;
+    if (!isTimerActive || gameState !== 'playing') return;
     const timerId = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
+      setTimeLeft(prev => (prev > 0 ? prev - 1 : prev));
     }, 1000);
     return () => clearInterval(timerId);
-  }, [isTimerActive, gameState, timeLeft]);
+  }, [isTimerActive, gameState]);
 
   useEffect(() => {
     if (isTimerActive && gameState === 'playing' && timeLeft === 0) {
@@ -295,7 +343,8 @@ export default function App() {
 
   const startGame = () => {
     initAudio();
-    let newDeck = JSON.parse(JSON.stringify(FULL_DECK_DEF));
+    // 各カードに一意なIDを付与（Reactのkeyとして使用し、手札変動時の描画崩れを防ぐ）
+    const newDeck = FULL_DECK_DEF.map((card, i) => ({ ...card, id: `card-${i}` }));
     for (let i = newDeck.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]];
@@ -421,7 +470,6 @@ export default function App() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap');
         * { font-family: 'Zen Maru Gothic', sans-serif; }
         ruby { ruby-align: center; ruby-position: over; }
         rt { font-size: 0.65em; color: #8d6e63; font-weight: 500; line-height: 1.2; }
@@ -431,8 +479,17 @@ export default function App() {
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; touch-action: manipulation; }
       `}</style>
 
-      {/* アプリ全体のコンテナ (全画面固定・フレックス) */}
-      <div className="fixed inset-0 flex flex-col select-none touch-none" style={bgStyle}>
+      {/* アプリ全体のコンテナ (全画面固定・フレックス・ノッチ等のセーフエリア対応) */}
+      <div
+        className="fixed inset-0 flex flex-col select-none touch-none"
+        style={{
+          ...bgStyle,
+          paddingTop: 'env(safe-area-inset-top)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+          paddingLeft: 'env(safe-area-inset-left)',
+          paddingRight: 'env(safe-area-inset-right)',
+        }}
+      >
 
         {/* ==========================================
             固定ヘッダー (ゴブレット完全再現デザイン)
@@ -533,22 +590,32 @@ export default function App() {
 
           {/* PLAYING SCREEN */}
           {gameState === 'playing' && (
-            <div className="absolute inset-0 pointer-events-auto touch-none" onClick={() => initAudio()}>
+            <div ref={playAreaRef} className="absolute inset-0 overflow-hidden pointer-events-auto touch-none" onClick={() => initAudio()}>
+              {/* 固定デザインサイズの仮想フィールドを実画面に合わせてスケーリング */}
+              <div
+                className="relative"
+                style={{
+                  width: areaSize.w > 0 ? areaSize.w / playScale : '100%',
+                  height: areaSize.h > 0 ? areaSize.h / playScale : '100%',
+                  transform: `scale(${playScale})`,
+                  transformOrigin: 'top left',
+                }}
+              >
 
               {/* Central Board Area */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center p-6 md:p-8 bg-white/50 backdrop-blur-xl rounded-[3rem] shadow-[0_0_60px_rgba(255,255,255,0.9)] border-4 border-white z-10 min-w-[320px] md:min-w-[420px]">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center p-8 bg-white/50 backdrop-blur-xl rounded-[3rem] shadow-[0_0_60px_rgba(255,255,255,0.9)] border-4 border-white z-10 min-w-[420px]">
 
-                <div className="flex gap-4 md:gap-8 items-start justify-center w-full">
+                <div className="flex gap-8 items-start justify-center w-full">
                   {/* Deck / Pass Button */}
                   <div
                     onClick={handleDrawForBoard}
-                    className={`relative w-24 h-36 md:w-32 md:h-44 rounded-2xl flex flex-col items-center justify-center border-4 shadow-md transition-all duration-200 active:scale-95 select-none shrink-0 ${deck.length > 0 ? 'bg-blue-50 border-blue-300 cursor-pointer hover:-translate-y-2 hover:shadow-lg hover:border-blue-400' : 'bg-gray-100 border-gray-300 cursor-not-allowed'}`}
+                    className={`relative w-32 h-44 rounded-2xl flex flex-col items-center justify-center border-4 shadow-md transition-all duration-200 active:scale-95 select-none shrink-0 ${deck.length > 0 ? 'bg-blue-50 border-blue-300 cursor-pointer hover:-translate-y-2 hover:shadow-lg hover:border-blue-400' : 'bg-gray-100 border-gray-300 cursor-not-allowed'}`}
                   >
-                    <BookOpen className={`w-6 h-6 md:w-8 md:h-8 mb-1 md:mb-2 ${deck.length > 0 ? 'text-blue-400' : 'text-gray-400'}`} />
-                    <span className={`font-black text-lg md:text-xl ${deck.length > 0 ? 'text-blue-500' : 'text-gray-400'}`}>山札</span>
-                    <span className={`font-black text-3xl md:text-4xl ${deck.length > 0 ? 'text-blue-600' : 'text-gray-500'}`}>{deck.length}</span>
+                    <BookOpen className={`w-8 h-8 mb-2 ${deck.length > 0 ? 'text-blue-400' : 'text-gray-400'}`} />
+                    <span className={`font-black text-xl ${deck.length > 0 ? 'text-blue-500' : 'text-gray-400'}`}>山札</span>
+                    <span className={`font-black text-4xl ${deck.length > 0 ? 'text-blue-600' : 'text-gray-500'}`}>{deck.length}</span>
                     {deck.length > 0 && (
-                      <div className="absolute -bottom-3 md:-bottom-4 bg-yellow-400 text-yellow-900 text-[10px] md:text-xs font-bold px-3 py-1 md:px-4 md:py-1.5 rounded-full shadow-md whitespace-nowrap">
+                      <div className="absolute -bottom-4 bg-yellow-400 text-yellow-900 text-xs font-bold px-4 py-1.5 rounded-full shadow-md whitespace-nowrap">
                         パス / 場に出す
                       </div>
                     )}
@@ -561,13 +628,13 @@ export default function App() {
                         <Star className="w-3 h-3 mr-1 text-yellow-400 fill-current" />
                         今のお題
                       </div>
-                      {boardCard ? <Card card={boardCard} isBoard={true} /> : <div className="w-24 h-36 md:w-32 md:h-44 border-4 border-dashed border-gray-300 rounded-2xl" />}
+                      {boardCard ? <Card card={boardCard} isBoard={true} /> : <div className="w-32 h-44 border-4 border-dashed border-gray-300 rounded-2xl" />}
                     </div>
 
                     {/* Timer Display */}
-                    <div className="h-10 md:h-12 mt-3 md:mt-4 flex items-center justify-center w-full">
+                    <div className="h-12 mt-4 flex items-center justify-center w-full">
                       {isTimerActive && (
-                        <div className={`px-4 py-1.5 md:py-2 rounded-full font-black text-sm md:text-base shadow-lg border-2 whitespace-nowrap transition-colors ${timeLeft <= 3 ? 'bg-red-500 text-white border-white animate-pulse' : 'bg-gray-800 text-yellow-400 border-gray-900'
+                        <div className={`px-4 py-2 rounded-full font-black text-base shadow-lg border-2 whitespace-nowrap transition-colors ${timeLeft <= 3 ? 'bg-red-500 text-white border-white animate-pulse' : 'bg-gray-800 text-yellow-400 border-gray-900'
                           }`}>
                           ⏳ あと {timeLeft}秒
                         </div>
@@ -608,28 +675,34 @@ export default function App() {
 
                       {/* Player Header */}
                       <div className="flex justify-between items-center w-full mb-3">
-                        <span className="font-bold text-blue-600 flex items-center text-sm md:text-base">
-                          <Smile className="w-4 h-4 md:w-5 md:h-5 mr-1 text-yellow-500 fill-current" />
+                        <span className="font-bold text-blue-600 flex items-center text-base">
+                          <Smile className="w-5 h-5 mr-1 text-yellow-500 fill-current" />
                           プレイヤー{playerNum}
                         </span>
-                        <span className="bg-gray-100 border px-2 py-0.5 rounded-full text-xs md:text-sm font-bold text-gray-700">
+                        <span className="bg-gray-100 border px-2 py-0.5 rounded-full text-sm font-bold text-gray-700">
                           残り {hand.length}枚
                         </span>
                       </div>
 
                       {/* Hand Area */}
-                      <div className="flex justify-center items-center h-[90px] md:h-[120px] w-full mb-3 md:mb-4">
+                      <div className="flex justify-center items-center h-[120px] w-full mb-4">
                         {hasWon ? (
                           <div className="text-red-500 font-black text-2xl flex flex-col items-center animate-bounce">
                             <Trophy className="w-10 h-10 mb-1 text-yellow-400 fill-current" />
                             あがり！
                           </div>
                         ) : (
-                          <div className="flex gap-1.5 md:gap-2 justify-center w-full px-1">
+                          <div className="flex justify-center w-full px-1">
                             {hand.map((card, cardIdx) => {
                               const isSelected = selectedCards[pid] === cardIdx;
+                              // 枚数が増えたらカードを重ねてエリア内に収める
+                              const overlap = hand.length <= 5 ? 6 : Math.max(-34, 6 - (hand.length - 5) * 10);
                               return (
-                                <div key={cardIdx} className="relative transition-transform duration-200 active:scale-95 cursor-pointer">
+                                <div
+                                  key={card.id ?? cardIdx}
+                                  className="relative transition-transform duration-200 active:scale-95 cursor-pointer"
+                                  style={cardIdx > 0 ? { marginLeft: `${overlap}px` } : undefined}
+                                >
                                   <Card
                                     card={card}
                                     isBoard={false}
@@ -651,15 +724,16 @@ export default function App() {
                       <button
                         onClick={() => handleDrawToHand(pid)}
                         disabled={deck.length === 0 || hasWon}
-                        className="w-full bg-blue-600 text-white text-sm md:text-base py-2.5 md:py-3 rounded-full font-bold shadow-sm hover:bg-blue-700 active:scale-95 disabled:bg-gray-300 disabled:text-gray-500 transition-all flex justify-center items-center"
+                        className="w-full bg-blue-600 text-white text-base py-3 rounded-full font-bold shadow-sm hover:bg-blue-700 active:scale-95 disabled:bg-gray-300 disabled:text-gray-500 transition-all flex justify-center items-center"
                       >
-                        <PlusCircle className="w-4 h-4 md:w-5 md:h-5 mr-1" />山札から引く
+                        <PlusCircle className="w-5 h-5 mr-1" />山札から引く
                       </button>
 
                     </div>
                   </PlayerSlot>
                 );
               })}
+              </div>
             </div>
           )}
         </main>
