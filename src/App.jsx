@@ -786,6 +786,7 @@ export default function App() {
                     <ul className="text-left inline-block font-bold text-gray-600 text-lg">
                       <li className="mb-4 flex items-center"><span className="bg-cyan-400 text-white px-3 py-1 rounded mr-3 shrink-0">あ行</span>あ,い,う,え,お OK！</li>
                       <li className="mb-4 flex items-center"><span className="bg-yellow-200 text-amber-900 border border-yellow-400 px-3 py-1 rounded mr-3 shrink-0">⑤</span>5<ruby>文<rt>も</rt>字<rt>じ</rt></ruby>ぴったりの<ruby>言<rt>こと</rt>葉<rt>ば</rt></ruby></li>
+                      <li className="mb-4 flex items-center"><span className="bg-yellow-200 text-amber-900 border border-yellow-400 px-3 py-1 rounded mr-3 shrink-0">⑥</span>6<ruby>文<rt>も</rt>字<rt>じ</rt></ruby>ぴったりの<ruby>言<rt>こと</rt>葉<rt>ば</rt></ruby></li>
                       <li className="flex items-center"><span className="bg-yellow-200 text-amber-900 border border-yellow-400 px-3 py-1 rounded mr-3 shrink-0">⑦+</span>7<ruby>文<rt>も</rt>字<rt>じ</rt></ruby><ruby>以<rt>い</rt>上<rt>じょう</rt></ruby>の<ruby>言<rt>こと</rt>葉<rt>ば</rt></ruby></li>
                     </ul>
                   </div>
