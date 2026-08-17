@@ -63,5 +63,5 @@ export default defineConfig({
       }
     })
   ],
-  base: '/word_basket/',
+  base: './',
 })
