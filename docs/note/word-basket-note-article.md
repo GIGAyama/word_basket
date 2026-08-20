@@ -10,7 +10,7 @@
 
 それをブラウザで動くようにしたのが、今回のアプリです。
 
-https://gigayama.github.io/word_basket/
+https://word-basket.giga-school.com/
 
 インストールもログインもありません。名前を入力する場面もありません。リンクを開いた瞬間から遊べます。
 
@@ -134,9 +134,9 @@ https://gigayama.github.io/word_basket/
 
 アプリの場所はここです。
 
-https://gigayama.github.io/word_basket/
+https://word-basket.giga-school.com/
 
-校内のフィルタリングを通す場合は、三つのアドレスを許可してください。アプリ本体がある gigayama.github.io と、文字の形を読みこんでいる fonts.googleapis.com、fonts.gstatic.com です。あとの二つは見た目のためだけなので、通らなくても遊べます。文字の形が少し変わるだけです。
+校内のフィルタリングを通す場合は、三つのアドレスを許可してください。アプリ本体がある word-basket.giga-school.com と、文字の形を読みこんでいる fonts.googleapis.com、fonts.gstatic.com です。あとの二つは見た目のためだけなので、通らなくても遊べます。文字の形が少し変わるだけです。
 
 個人情報については、送るものも残すものもありません。名前やクラスを入力する場面がなく、遊んだ記録も、勝った回数も、設定した人数さえも端末に残りません。閉じればまっさらに戻ります。共用のタブレットを次の学級に渡すときに、消しておく作業はいりません。
 

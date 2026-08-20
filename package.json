@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "homepage": "https://gigayama.github.io/word_basket/",
+  "homepage": "https://word-basket.giga-school.com/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
