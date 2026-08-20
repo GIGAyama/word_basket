@@ -16,7 +16,7 @@
 場に出ているカードの文字で始まり、自分の手札の文字で終わる3文字以上の言葉を、思いついた人から先に言って手札を減らします。
 インストールもログインも不要で、リンクを開いた瞬間から遊べます。
 
-**公開URL:** [https://gigayama.github.io/word_basket/](https://gigayama.github.io/word_basket/)
+**公開URL:** [https://word-basket.giga-school.com/](https://word-basket.giga-school.com/)
 
 詳しい操作と画面の説明は **[MANUAL.md（取扱説明書）](MANUAL.md)** にまとめています。
 
