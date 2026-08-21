@@ -71,7 +71,7 @@ npm run preview # ビルド結果をローカルで確認
 - [docs/note/](docs/note/) — note 公開用の紹介記事と画面写真
 
 ## 作者
-Created by [GIGA山](https://note.com/cute_borage86)
+Created by [GIGA山](https://giga-school.com)
 
 ---
 

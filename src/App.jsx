@@ -743,7 +743,7 @@ export default function App() {
             ========================================== */}
         <footer className="bg-white/90 shrink-0 z-50 text-center text-gray-500 py-2 border-t border-gray-200 w-full pointer-events-auto">
           <small className="text-[0.7rem]">
-            © 2026 みんなでしりとり！ <a href="https://note.com/cute_borage86" target="_blank" rel="noopener noreferrer" className="no-underline text-gray-500 hover:text-gray-800">GIGA山</a>
+            © 2026 みんなでしりとり！ <a href="https://giga-school.com" target="_blank" rel="noopener noreferrer" className="no-underline text-gray-500 hover:text-gray-800">GIGA山</a>
           </small>
         </footer>
 
