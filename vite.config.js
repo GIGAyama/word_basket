@@ -40,6 +40,10 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+        // プライバシーポリシー・利用規約は独立した静的 HTML なので
+        // Service Worker のナビゲーションフォールバック (index.html) に
+        // 横取りさせず、そのページ自体を表示させる
+        navigateFallbackDenylist: [/\/privacy\.html$/, /\/terms\.html$/],
         // Google Fonts をキャッシュしてオフラインでもフォントを表示
         runtimeCaching: [
           {
