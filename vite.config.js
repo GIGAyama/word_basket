@@ -41,7 +41,21 @@ export default defineConfig({
       workbox: {
         // ⚠️ woff2 を必ず入れること。自己ホストにしたので、ここから漏れると
         //    「オフラインでは端末フォントに落ちる」が、画面は出るので気づけない。
-        globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2}'],
+        globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+        // 書体は先読みに入れない。入れると先読みが 1MB を超え、校内 Wi-Fi で
+        // 40 台が同時に開いたときに初回表示が止まる。画面が出れば必ず取りにいくので、
+        // その 1 回でここに入る。2 回目からはオフラインでも同じように出る。
+        runtimeCaching: [
+          {
+            urlPattern: ({ request, sameOrigin }) => sameOrigin && request.destination === 'font',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'self-hosted-fonts',
+              cacheableResponse: { statuses: [0, 200] },
+              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+        ],
         // プライバシーポリシー・利用規約は独立した静的 HTML なので
         // Service Worker のナビゲーションフォールバック (index.html) に
         // 横取りさせず、そのページ自体を表示させる
