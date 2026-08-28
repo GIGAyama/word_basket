@@ -39,31 +39,16 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
+        // ⚠️ woff2 を必ず入れること。自己ホストにしたので、ここから漏れると
+        //    「オフラインでは端末フォントに落ちる」が、画面は出るので気づけない。
+        globPatterns: ['**/*.{js,css,html,png,svg,ico,woff2}'],
         // プライバシーポリシー・利用規約は独立した静的 HTML なので
         // Service Worker のナビゲーションフォールバック (index.html) に
         // 横取りさせず、そのページ自体を表示させる
         navigateFallbackDenylist: [/\/privacy\.html$/, /\/terms\.html$/],
-        // Google Fonts をキャッシュしてオフラインでもフォントを表示
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'google-fonts-stylesheets',
-              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-webfonts',
-              cacheableResponse: { statuses: [0, 200] },
-              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 }
-            }
-          }
-        ]
+        // 実行時に取りにいく外部は無い。書体は public/fonts/ から配り、
+        // 上の globPatterns で先読みしている。ここに Google Fonts の
+        // runtimeCaching を戻さないこと（戻すと外部通信が復活する）。
       }
     })
   ],
