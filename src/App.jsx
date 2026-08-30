@@ -741,10 +741,16 @@ export default function App() {
         {/* ==========================================
             固定フッター (ゴブレット完全再現デザイン)
             ========================================== */}
-        <footer className="bg-white/90 shrink-0 z-50 text-center text-gray-500 py-2 border-t border-gray-200 w-full pointer-events-auto">
-          <small className="text-[0.7rem]">
-            © 2026 みんなでしりとり！ <a href="https://giga-school.com" target="_blank" rel="noopener noreferrer" className="no-underline text-gray-500 hover:text-gray-800">GIGA山</a>{' '}
-            <a href="https://giga-school.com/apps/word-basket/" target="_blank" rel="noopener noreferrer" className="no-underline text-gray-500 hover:text-gray-800">使い方を読む</a>
+        {/* フッターは 1 行に収める。2 行になると、そのぶん遊ぶ場所を奪う。
+            幅が足りなくなったら切るのはクレジットのほうで、利用規約と
+            プライバシーへの行き先は必ず残す。画面からそこへ辿れるのは
+            ここだけしかない。中身は正本の部品が出す（giga-app-links.js）。
+            ⚠️ min-w-0 を落とさないこと。行き先は折り返さないので、これが
+               無いと最小幅が段を押し広げ、狭い画面で横に溢れる。 */}
+        <footer className="bg-white/90 shrink-0 z-50 text-center text-gray-500 py-1 border-t border-gray-200 w-full pointer-events-auto">
+          <small className="text-[0.7rem] flex flex-nowrap items-center justify-center gap-1 min-w-0">
+            <span className="min-w-0 truncate">© 2026 みんなでしりとり！ <a href="https://giga-school.com" target="_blank" rel="noopener noreferrer" className="no-underline text-gray-500 hover:text-gray-800">GIGA山</a></span>
+            <span data-giga-links data-links="terms,privacy" />
           </small>
         </footer>
 

@@ -51,6 +51,10 @@
   ],
   "files": [
     {
+      "canonical": "web/giga-app-links.js",
+      "local": "public/giga-app-links.js"
+    },
+    {
       "canonical": "fonts/build-fonts.mjs",
       "local": "tools/fonts/build-fonts.mjs"
     },
